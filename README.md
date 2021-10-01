@@ -2,6 +2,9 @@ HELLO!
 
 Zero effort has been put into this to make it easy to maintain nor read. This is for me to use and you to laugh at.
 
+
+This replaces your background with your pick of jpg or gif!
+
 Installation
 ------------
 
