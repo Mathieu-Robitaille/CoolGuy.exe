@@ -21,5 +21,6 @@ docker run -d \
   --network=fakecam \
   -u "$(id -u):$(getent group video | cut -d: -f3)" \
   $(find /dev -name 'video*' -printf "--device %p ") \
-  -v "$IMAGEDIR:/data/"
+  -v "$IMAGEDIR:/data/" \
+  --restart=always \
   fakecam:latest
