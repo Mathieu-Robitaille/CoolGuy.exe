@@ -17,10 +17,14 @@ Installation
 - Start fakecam (check docker-run.sh) This might take ~20 min due to opencv
 - use vlc to check your camera is working [Media -> Open Capture Device -> video device /dev/video20]
 
+It seems like running this ``` docker run --rm --gpus all nvidia/cuda:11.0-base nvidia-smi ``` Might fix some devices missing for /dev/nvidia-*?????
+
 
 Ideas:
+----
 
-make webpage that allows you to upload images or gifs and allows you to switch between them instead of the hot bodge
+- Actually use the python lib... https://pypi.org/project/tf-bodypix/
+- Make webpage that allows you to upload images or gifs and allows you to switch between them instead of the hot bodge
 
 To change to an existing image (or just use change-background.sh)
 
