@@ -1,0 +1,5 @@
+imageio==2.9.0
+opencv-python==4.3.0.38
+pyfakewebcam==0.1.0
+requests==2.23.0
+validators==0.18.2
