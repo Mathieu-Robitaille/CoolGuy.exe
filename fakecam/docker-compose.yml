@@ -1,0 +1,16 @@
+version: "3"
+services: 
+  fakecam:
+    build: .
+    ports: 
+      - "5000:5000"
+    volumes:
+      - .:/data
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    devices:
+      - /dev/video0
+      - /dev/video20
