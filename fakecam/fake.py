@@ -1,31 +1,37 @@
 import cv2
 import imageio
-import numpy as np
 import os
 import pyfakewebcam
 import requests
 import urllib.request
 import validators
 
+from effects import apply_effect, available_effects
 from flask import Flask, request
 from itertools import cycle
 from threading import Thread
 from time import sleep
 
-root_path = "/home/jm/git/fake-camera/fakecam/backgrounds"
+import tensorflow as tf
+from tf_bodypix.api import download_model, load_model, BodyPixModelPaths
+
+
+# load model (once)
+bodypix_model = load_model(download_model(
+    BodyPixModelPaths.MOBILENET_FLOAT_50_STRIDE_16 # Not omega mode
+    # BodyPixModelPaths.RESNET50_FLOAT_STRIDE_16 # Omega mode
+))
+
+root_path = "/data/backgrounds"
 background_filename = "rat.gif"
 height, width = 720, 1280
 
+# Dont change this for now, i'll fix it later
+EFFECT = available_effects.no_effect
 
-def get_mask(frame, bodypix_url='http://127.0.0.1:9000'):
-    _, data = cv2.imencode(".jpg", frame)
-    r = requests.post(
-        url=bodypix_url,
-        data=data.tobytes(),
-        headers={'Content-Type': 'application/octet-stream'})
-    mask = np.frombuffer(r.content, dtype=np.uint8)
-    mask = mask.reshape((frame.shape[0], frame.shape[1]))
-    return mask
+def local_mask(frame):
+    result = bodypix_model.predict_single(frame)
+    return result.get_mask(threshold=0.75)
 
 
 def get_frame(cap, background_scaled):
@@ -35,17 +41,21 @@ def get_frame(cap, background_scaled):
     mask = None
     while mask is None:
         try:
-            mask = get_mask(frame)
+            mask = local_mask(frame)
         except requests.RequestException as e:
             print("Mask request failed, retrying")
             print(e)
             sleep(1)
 
-    # composite the foreground and background
+    # Apply an effect
+    if EFFECT:
+        frame = apply_effect(frame, effect=EFFECT)
+
+    # Look at the mess i can make!
     inv_mask = 1 - mask
     for c in range(frame.shape[2]):
-        frame[:, :, c] = frame[:, :, c] * mask + \
-            background_scaled[:, :, c] * inv_mask
+        frame[:, :, c] = frame[:, :, c] * mask[:, :, 0] + \
+            background_scaled[:, :, c] * inv_mask[:, :, 0]
     return frame
 
 
@@ -153,6 +163,7 @@ def main():
         next_frame = get_frame(cap, next(background))
 
         # fake webcam expects RGB
+        # The depth is too much here?
         next_frame = cv2.cvtColor(next_frame, cv2.COLOR_BGR2RGB)
         fake.schedule_frame(next_frame)
 

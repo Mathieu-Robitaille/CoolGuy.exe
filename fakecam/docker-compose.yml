@@ -1,0 +1,15 @@
+version: "3"
+services: 
+  fakecam:
+    build: .
+    network_mode: "host"
+    volumes:
+      - .:/data
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    devices:
+      - /dev/video0
+      - /dev/video20

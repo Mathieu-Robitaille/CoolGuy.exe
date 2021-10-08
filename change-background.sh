@@ -1,6 +1,6 @@
 #!/bin/bash
 dirpath="/home/jm/git/CoolGuy.exe/fakecam"
-newfile="$(ls -l $dirpath/backgrounds | awk '/[.jpg|.gif]/{print $9}' | dmenu -b -i -l 4 -fn 'Source Code Pro:style=Regular')"
+newfile="$(ls -l $dirpath/backgrounds | awk '/[.jpg|.gif]/{print $9}' | dmenu -b -i -l 15 -fn 'Source Code Pro:style=Regular')"
 
 [[ -e "$dirpath/backgrounds/$newfile" ]] || exit 1
 [[ $newfile ]] || exit 1 
