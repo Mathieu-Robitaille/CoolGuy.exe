@@ -6,3 +6,5 @@ requests==2.26.0
 tf-bodypix==0.3.6
 tfjs-graph-converter==1.4.2
 validators==0.18.2
+numpy==1.19.5
+# tensorflow<3,>=2.1.0
