@@ -17,4 +17,5 @@ RUN pip install --no-cache-dir -r /src/requirements.txt
 
 # run our fake camera script (with unbuffered output for easier debug)
 COPY *.py /src/
+COPY libs /src/libs/
 ENTRYPOINT python -u fake.py
