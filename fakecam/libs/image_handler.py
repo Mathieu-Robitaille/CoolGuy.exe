@@ -11,20 +11,20 @@ from itertools import cycle
 class Image_Handler:
     def __init__(
             self,
-            width: int = 1280, 
+            width: int = 1280,
             height: int = 720,
             background_root_path: str = '/data/backgrounds',
             background_path: str = 'rat.gif',
             effect: effects.available_effects = effects.available_effects.no_effect
-            ) -> None:
+    ) -> None:
         self.width = width
         self.height = height
-        
+
         self.background_root_path = background_root_path
         self.background_path = background_path
 
         self.background = None
-        
+
         self.effect = effect
 
     def change_effect(self, new_effect: effects.available_effects) -> None:
@@ -47,7 +47,8 @@ class Image_Handler:
     def load_gif(self, uri):
         gif = imageio.mimread(uri)
         conv_gif = [cv2.cvtColor(frame, cv2.COLOR_RGB2BGR) for frame in gif]
-        scaled_gif = np.array([cv2.resize(frame, (self.width, self.height)) for frame in conv_gif])
+        scaled_gif = np.array(
+            [cv2.resize(frame, (self.width, self.height)) for frame in conv_gif])
         self.background = cycle(scaled_gif)
 
     def load_image(self, uri):
@@ -73,7 +74,7 @@ class Image_Handler:
             raise FileNotFoundError
         self.background_path = filename
         self.load_background(path)
-    
+
     def download_object(self, url, filename):
         if os.path.exists(f"{self.background_root_path}/{filename}"):
             return True

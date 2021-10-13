@@ -15,6 +15,7 @@ sys.path.append(libs_dir)
 from bodypix import BodyPix
 from camera import Camera
 from image_handler import Image_Handler
+from effects import available_effects
 
 # As per https://stackoverflow.com/questions/28423069/store-large-data-or-a-service-connection-per-flask-session
 ih_connection = None
