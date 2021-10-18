@@ -1,6 +1,9 @@
 import cv2
 import pyfakewebcam
 
+class CameraCaptureError(Exception):
+    pass
+
 class Camera:
 
     def __init__(
@@ -20,7 +23,9 @@ class Camera:
         self.fakecam = pyfakewebcam.FakeWebcam('/dev/video20', width, height)
 
     def get_frame(self):
-        _, frame = self.cap.read()
+        status, frame = self.cap.read()
+        if not status:
+            raise CameraCaptureError
         return frame
     
     def schedule_frame(self, frame):

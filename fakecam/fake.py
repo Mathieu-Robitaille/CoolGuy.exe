@@ -14,7 +14,7 @@ libs_dir = os.path.join(working_dir, 'libs')
 sys.path.append(libs_dir)
 
 from bodypix import BodyPix
-from camera import Camera
+from camera import Camera, CameraCaptureError
 from image_handler import Image_Handler
 from effects import available_effects
 
@@ -85,13 +85,14 @@ def main():
             frame = camera.get_frame()
             frame = ih.apply_effect(frame)
 
-            success, mask = bodypix.get_mask(capture=frame)
-            if not success:
-                raise 
+            mask = bodypix.get_mask(capture=frame)
             mask = ih.refine_mask(mask)
 
             composited_frame = ih.composite_frames(capture=frame, mask=mask)
             camera.schedule_frame(composited_frame)
+        except CameraCaptureError as e:
+            print("The camera failed to capture a frame.\n\tSleeping now for a few seconds.")
+            time.sleep(3)
         except Exception as e:
             # The best way to handle exceptions is obviously to just catch them all :)
             time.sleep(1)

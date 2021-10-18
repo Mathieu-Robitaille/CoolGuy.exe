@@ -13,7 +13,5 @@ class BodyPix:
         self.bodypix_model = load_model(download_model(model))
     
     def get_mask(self, capture) -> np.array:
-        if not capture:
-            return False, None
         result = self.bodypix_model.predict_single(capture)
-        return True, result.get_mask(threshold=0.75)
+        return result.get_mask(threshold=0.75)
