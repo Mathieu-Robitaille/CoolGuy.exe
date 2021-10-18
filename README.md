@@ -24,7 +24,8 @@ TODO
 - Finish effects. Maybe even extend them to be able to be generated in the webpage?
 - Test the performance of different segments of code, optimise them as much as possible
   - We might not need to get the mask every frame, but only every second frame.
-
+- Change the implementation of image_handler to an abstract class and extend it for video and streams (and other image types if they need that)
+- Fix the gross compositing code
 
 USE
 ------

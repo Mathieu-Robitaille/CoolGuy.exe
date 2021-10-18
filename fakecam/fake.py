@@ -2,6 +2,7 @@
 import validators
 import os
 import sys
+import time
 
 from flask import Flask, request
 from threading import Thread
@@ -36,6 +37,10 @@ def get_ih() -> Image_Handler:
         return ih_connection
 
 
+# =======================
+#  Move flask stuff to another file
+# =======================
+
 @flask_app.route('/', methods=['POST'])
 def change_on_request():
     ih = get_ih()
@@ -57,6 +62,7 @@ def start_flask():
     kwargs = {'host': '127.0.0.1', 'port': 5000, 'threaded': True, 'use_reloader': False, 'debug': False}
     Thread(target=flask_app.run, daemon=True, kwargs=kwargs).start()
 
+# =======================
 
 def main():
     
@@ -79,13 +85,16 @@ def main():
             frame = camera.get_frame()
             frame = ih.apply_effect(frame)
 
-            mask = bodypix.get_mask(capture=frame)
+            success, mask = bodypix.get_mask(capture=frame)
+            if not success:
+                raise 
             mask = ih.refine_mask(mask)
 
             composited_frame = ih.composite_frames(capture=frame, mask=mask)
             camera.schedule_frame(composited_frame)
         except Exception as e:
             # The best way to handle exceptions is obviously to just catch them all :)
+            time.sleep(1)
             print(e)
             print(traceback.format_exc())
 
