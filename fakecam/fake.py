@@ -17,6 +17,9 @@ from camera import Camera
 from image_handler import Image_Handler
 from effects import available_effects
 
+
+import traceback
+
 # As per https://stackoverflow.com/questions/28423069/store-large-data-or-a-service-connection-per-flask-session
 ih_connection = None
 flask_app = Flask(__name__)
@@ -74,12 +77,17 @@ def main():
     while True:
         try:
             frame = camera.get_frame()
-            mask = bodypix.get_mask(capture=frame)
             frame = ih.apply_effect(frame)
+
+            mask = bodypix.get_mask(capture=frame)
+            mask = ih.refine_mask(mask)
+
             composited_frame = ih.composite_frames(capture=frame, mask=mask)
             camera.schedule_frame(composited_frame)
         except Exception as e:
+            # The best way to handle exceptions is obviously to just catch them all :)
             print(e)
+            print(traceback.format_exc())
 
 
 if __name__ == "__main__":

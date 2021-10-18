@@ -35,13 +35,18 @@ class Image_Handler:
             pass
         return effects.apply_effect(frame, self.effect)
 
+    def refine_mask(self, mask):
+        mask = np.array(mask)
+        mask = cv2.dilate(mask.astype('uint8'), np.ones((10, 10), np.uint8), iterations=1)
+        mask = cv2.blur(mask.astype(float), (30, 30))
+        return mask
+
     def composite_frames(self, capture: np.array, mask: np.array) -> np.array:
         inv_mask = 1 - mask
         bg = next(self.background)
         # Have fun :)
         for c in range(capture.shape[2]):
-            capture[:, :, c] = capture[:, :, c] * mask[:, :, 0] + \
-                bg[:, :, c] * inv_mask[:, :, 0]
+            capture[:, :, c] = capture[:, :, c] * mask + bg[:, :, c] * inv_mask
         return capture
 
     def load_gif(self, uri):
