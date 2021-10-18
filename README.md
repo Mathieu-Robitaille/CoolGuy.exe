@@ -1,37 +1,39 @@
-HELLO!
+CoolGuy.exe
+-----------
 
-Zero effort has been put into this to make it easy to maintain nor read. This is for me to use and you to laugh at.
+This is a tool to replace your background with a gif or jpg (realistically it could be another image format but I have not tested it....)
 
-
-This replaces your background with your pick of jpg or gif!
+I'm not a python dev (or really even a dev) by trade so there are some crimes commited in here, I dont really know what I'm doing.
+If you do spot a crime I'm more than happy to take feedback.
 
 Installation
 ------------
 
-- You need nvidia's container runtime, GOOD LUCK!
-- You need to edit some of these files. (dirpath in change-background.sh, and path in docker-run)
-- You need to install v4l2loopback, and I think thats it?
-- run this ```sudo modprobe v4l2loopback devices=1 video_nr=20 card_label="v4l2loopback" exclusive_caps=1```
-- Build both containers (check build.sh)
-- Start bodypix (check docker-run.sh)
-- Start fakecam (check docker-run.sh) This might take ~20 min due to opencv
+- You need nvidia's container runtime, [here](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html).
+- You need to install v4l2loopback. 
+- run this ```sudo modprobe v4l2loopback devices=1 video_nr=20 card_label="v4l2loopback" exclusive_caps=1```. This creates a webcam device we send data to.
+- Run the docker compose file.
 - use vlc to check your camera is working [Media -> Open Capture Device -> video device /dev/video20]
 
-It seems like running this ``` docker run --rm --gpus all nvidia/cuda:11.0-base nvidia-smi ``` Might fix some devices missing for /dev/nvidia-*?????
-
-
-Ideas:
+TODO
 ----
 
-- Actually use the python lib... https://pypi.org/project/tf-bodypix/
-- Make webpage that allows you to upload images or gifs and allows you to switch between them instead of the hot bodge
+- Allow use of other image formats.
+- Allow use of video formats.
+- Make webpage that allows you to upload compatible background formats.
+- Finish effects. Maybe even extend them to be able to be generated in the webpage?
+- Test the performance of different segments of code, optimise them as much as possible
+  - We might not need to get the mask every frame, but only every second frame.
 
+
+USE
+------
 To change to an existing image (or just use change-background.sh)
 
 ```
 curl -H "Content-Type: application/json" \
     -X POST \
-    --data '{"filename":"rat.gif"}' \
+    --data '{"filename":"$EXISTING-FILENAME"}' \
     http://127.0.0.1:5000/
 ```
 
@@ -40,7 +42,7 @@ To upload and use a new photo use this
 ```
 curl -H "Content-Type: application/json" \
     -X POST \
-    --data '{"url":"https://i.imgur.com/x0RLIVW.gif", "filename":"rat.gif"}' \
+    --data '{"url":"https://i.imgur.com/x0RLIVW.gif", "filename":"$NEW-FILENAME"}' \
     http://127.0.0.1:5000/
 ```
 
