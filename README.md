@@ -10,10 +10,12 @@ Installation
 ------------
 
 - You need nvidia's container runtime, [here](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html).
+  - On archlinux ```yay nvidia-container-runtime``` not the -bin one  
 - You need to install v4l2loopback. 
-- run this ```sudo modprobe v4l2loopback devices=1 video_nr=20 card_label="v4l2loopback" exclusive_caps=1```. This creates a webcam device we send data to.
+- Run this ```sudo modprobe v4l2loopback devices=1 video_nr=20 card_label="v4l2loopback" exclusive_caps=1```. 
+  - This creates a webcam device we send data to.
 - Run the docker compose file.
-- use vlc to check your camera is working [Media -> Open Capture Device -> video device /dev/video20]
+- Use vlc to check your camera is working [Media -> Open Capture Device -> video device /dev/video20]
 
 TODO
 ----
@@ -47,19 +49,17 @@ curl -H "Content-Type: application/json" \
     http://127.0.0.1:5000/
 ```
 
-
-You run the container like this
-
-IMAGEDIR = the location you have images and or memes
+You'll also need to configure ```/etc/docker/daemon.json``` like so
 ```
-docker run -d \
-  --name=fakecam \
-  --network=fakecam \
-  -u "$(id -u):$(getent group video | cut -d: -f3)" \
-  $(find /dev -name 'video*' -printf "--device %p ") \
-  -v "$IMAGEDIR:/data/"
-  fakecam:latest
+{
+    "runtimes": {
+        "nvidia": {
+            "path": "/usr/bin/nvidia-container-runtime",  "runtimeArgs": []
+        }
+    }
+}
 ```
+
 
 Below are some good memes, share them wisely
 - https://c.tenor.com/hjhD5wq1jY8AAAAd/no-money-money.gif

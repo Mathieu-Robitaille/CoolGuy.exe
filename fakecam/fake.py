@@ -28,13 +28,18 @@ lock = Lock()
 
 default_image='popcorn.gif'
 
-
+# Dont actually need to lock this...
 def get_ih() -> Image_Handler:
     with lock:
         global ih_connection
         if not ih_connection:
-            ih_connection = Image_Handler(background_path=default_image)
+            absolute_dir = os.path.abspath(os.path.dirname(__file__))
+            ih_connection = Image_Handler(
+                background_root_path=os.path.join(absolute_dir, 'backgrounds'),
+                background_path=default_image
+            )
         return ih_connection
+
 
 
 # =======================
@@ -59,13 +64,12 @@ def change_on_request():
 
 def start_flask():
     # Init Flask
-    kwargs = {'host': '127.0.0.1', 'port': 5000, 'threaded': True, 'use_reloader': False, 'debug': False}
+    kwargs = {'host': '127.0.0.1', 'port': 9987, 'threaded': True, 'use_reloader': False, 'debug': False}
     Thread(target=flask_app.run, daemon=True, kwargs=kwargs).start()
 
 # =======================
 
 def main():
-    
     # This takes the longes to "warm up"
     bodypix = BodyPix()
 
@@ -98,6 +102,7 @@ def main():
             time.sleep(1)
             print(e)
             print(traceback.format_exc())
+            quit()
 
 
 if __name__ == "__main__":
