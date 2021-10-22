@@ -5,7 +5,7 @@ import os
 import urllib.request
 import numpy as np
 
-from itertools import cycle
+from libs import file_handler
 
 
 class Image_Handler:
@@ -13,15 +13,13 @@ class Image_Handler:
             self,
             width: int = 1280,
             height: int = 720,
-            background_root_path: str = '/data/backgrounds',
-            background_path: str = 'rat.gif',
+            background_filename: str = "rat.gif",
             effect: effects.available_effects = effects.available_effects.no_effect
     ) -> None:
         self.width = width
         self.height = height
 
-        self.background_root_path = background_root_path
-        self.background_path = background_path
+        self.background_filename = background_filename
 
         # This should be set to an iterator, preferably a cycle
         self.background = None
@@ -50,46 +48,19 @@ class Image_Handler:
             capture[:, :, c] = capture[:, :, c] * mask + bg[:, :, c] * inv_mask
         return capture
 
-
-    def load_gif(self, uri: str) -> None:
-        gif = imageio.mimread(uri)
-        conv_gif = [cv2.cvtColor(frame, cv2.COLOR_RGB2BGR) for frame in gif]
-        scaled_gif = np.array(
-            [cv2.resize(frame, (self.width, self.height)) for frame in conv_gif])
-        self.background = cycle(scaled_gif)
-
-    def load_image(self, uri: str) -> None:
-        img = cv2.imread(uri)
-        scaled_img = cv2.resize(img, (self.width, self.height))
-        self.background = cycle([scaled_img])
-
-    def load_background(self, uri: str) -> None:
-        ext = os.path.splitext(uri)[-1]
-        if ext == ".gif":
-            print("loading Gif")
-            self.load_gif(uri)
-        if ext == ".jpg":
-            print("loading jpg")
-            self.load_image(uri)
+    #==================
+    # Handle changing background
+    #==================
 
     def change_background(self, filename: str) -> None:
-        path = os.path.join(self.background_root_path, filename)
-        print(f"Loading {path}")
-        # This should just accept an array?
-        if not os.path.exists(path):
-            print("Path does not exist")
-            raise FileNotFoundError
+        result, path = file_handler.get_background_path(filename)
+        if not result:
+            pass
         self.background_path = filename
-        self.load_background(path)
+        bg = file_handler.load_background(path)
+        
 
-    def download_object(self, url: str, filename: str) -> None:
-        if os.path.exists(f"{self.background_root_path}/{filename}"):
-            return True
-        try:
-            data = bytearray(urllib.request.urlopen(url).read())
-            with open(f"{self.background_root_path}/{filename}", "wb+") as file_handler:
-                file_handler.write(data)
-        except Exception as e:
-            print(e)
-            return False
-        return True
+    #==================
+    # Somethign that shouldnt be here
+    #==================
+

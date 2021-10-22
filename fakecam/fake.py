@@ -1,23 +1,12 @@
 
 import validators
-import os
-import sys
 import time
+import libs
 
 from flask import Flask, request
 from threading import Thread
 
 from multiprocessing import Lock
-
-working_dir = os.path.dirname(__file__)
-libs_dir = os.path.join(working_dir, 'libs')
-sys.path.append(libs_dir)
-
-from bodypix import BodyPix
-from camera import Camera, CameraCaptureError
-from image_handler import Image_Handler
-from effects import available_effects
-
 
 import traceback
 
@@ -29,15 +18,11 @@ lock = Lock()
 default_image='popcorn.gif'
 
 # Dont actually need to lock this...
-def get_ih() -> Image_Handler:
+def get_ih() -> libs.image_handler.Image_Handler:
     with lock:
         global ih_connection
         if not ih_connection:
-            absolute_dir = os.path.abspath(os.path.dirname(__file__))
-            ih_connection = Image_Handler(
-                background_root_path=os.path.join(absolute_dir, 'backgrounds'),
-                background_path=default_image
-            )
+            ih_connection = libs.image_handler.Image_Handler()
         return ih_connection
 
 
@@ -71,10 +56,10 @@ def start_flask():
 
 def main():
     # This takes the longes to "warm up"
-    bodypix = BodyPix()
+    bodypix = libs.bodypix.BodyPix()
 
     # We need to see what we're doing :)
-    camera = Camera()
+    camera = libs.camera.Camera()
     
     # Set up the image handler
     ih = get_ih()
@@ -94,7 +79,7 @@ def main():
 
             composited_frame = ih.composite_frames(capture=frame, mask=mask)
             camera.schedule_frame(composited_frame)
-        except CameraCaptureError as e:
+        except libs.camera.CameraCaptureError as e:
             print("The camera failed to capture a frame.\n\tSleeping now for a few seconds.")
             time.sleep(3)
         except Exception as e:
