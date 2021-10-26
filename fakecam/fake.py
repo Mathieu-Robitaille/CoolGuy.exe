@@ -1,22 +1,12 @@
 
 import validators
-import os
-import sys
+import time
+import libs
 
 from flask import Flask, request
 from threading import Thread
 
 from multiprocessing import Lock
-
-working_dir = os.path.dirname(__file__)
-libs_dir = os.path.join(working_dir, 'libs')
-sys.path.append(libs_dir)
-
-from bodypix import BodyPix
-from camera import Camera
-from image_handler import Image_Handler
-from effects import available_effects
-
 
 import traceback
 
@@ -27,14 +17,19 @@ lock = Lock()
 
 default_image='popcorn.gif'
 
-
-def get_ih() -> Image_Handler:
+# Dont actually need to lock this...
+def get_ih() -> libs.image_handler.Image_Handler:
     with lock:
         global ih_connection
         if not ih_connection:
-            ih_connection = Image_Handler(background_path=default_image)
+            ih_connection = libs.image_handler.Image_Handler()
         return ih_connection
 
+
+
+# =======================
+#  Move flask stuff to another file
+# =======================
 
 @flask_app.route('/', methods=['POST'])
 def change_on_request():
@@ -54,21 +49,21 @@ def change_on_request():
 
 def start_flask():
     # Init Flask
-    kwargs = {'host': '127.0.0.1', 'port': 5000, 'threaded': True, 'use_reloader': False, 'debug': False}
+    kwargs = {'host': '127.0.0.1', 'port': 9987, 'threaded': True, 'use_reloader': False, 'debug': False}
     Thread(target=flask_app.run, daemon=True, kwargs=kwargs).start()
 
+# =======================
 
 def main():
-    
     # This takes the longes to "warm up"
-    bodypix = BodyPix()
+    bodypix = libs.bodypix.BodyPix()
 
     # We need to see what we're doing :)
-    camera = Camera()
+    camera = libs.camera.Camera()
     
     # Set up the image handler
     ih = get_ih()
-    ih.change_background(ih.background_path)
+    ih.change_background(ih.background_filename)
 
     # Start flask after pre flight is done    
     start_flask()
@@ -84,10 +79,15 @@ def main():
 
             composited_frame = ih.composite_frames(capture=frame, mask=mask)
             camera.schedule_frame(composited_frame)
+        except libs.camera.CameraCaptureError as e:
+            print("The camera failed to capture a frame.\n\tSleeping now for a few seconds.")
+            time.sleep(3)
         except Exception as e:
             # The best way to handle exceptions is obviously to just catch them all :)
+            time.sleep(1)
             print(e)
             print(traceback.format_exc())
+            quit()
 
 
 if __name__ == "__main__":
