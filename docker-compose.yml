@@ -1,0 +1,11 @@
+version: "3"
+services: 
+  fakecam:
+    build: .
+    network_mode: "host"
+    volumes:
+      - .:/app
+    runtime: nvidia
+    devices:
+      - /dev/video0
+      - /dev/video20
