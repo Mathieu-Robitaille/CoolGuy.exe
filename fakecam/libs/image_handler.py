@@ -42,7 +42,7 @@ class Image_Handler:
     def composite_frames(self, capture: np.array, mask: np.array) -> np.array:
         inv_mask = 1 - mask
         bg = next(self.background)
-       
+
         # How can I fix this?
         for c in range(capture.shape[2]):
             capture[:, :, c] = capture[:, :, c] * mask + bg[:, :, c] * inv_mask

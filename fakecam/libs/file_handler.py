@@ -1,4 +1,3 @@
-import re
 import filetype
 import os
 import sys
@@ -70,6 +69,7 @@ def load_background(uri: str) -> media.Media_Type:
         if IS_DEBUG:
             print(f"file_handler.load_background loading Image")
         return load_image(uri)
+
 
 def download_object(url: str, filename: str) -> None:
     result, path = get_background_path(filename)

@@ -17,7 +17,7 @@ class Image(Media_Type):
         self.media = media
 
     def resize(self, size) -> None:
-        self.media = cv2.resize(self.media, size)
+        self.media = [cv2.resize(self.media, size)]
 
     def __str__(self) -> str:
         return self.media
@@ -28,7 +28,6 @@ class Gif(Media_Type):
         self.media = media
 
     def resize(self, size) -> None:
-        # I dont think we need to change the color?
         conv_gif = [cv2.cvtColor(frame, cv2.COLOR_RGB2BGR) for frame in self.media]
         self.media = [cv2.resize(frame, size) for frame in conv_gif]
 
