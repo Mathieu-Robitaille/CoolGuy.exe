@@ -63,7 +63,7 @@ def main():
     
     # Set up the image handler
     ih = get_ih()
-    ih.change_background(ih.background_path)
+    ih.change_background(ih.background_filename)
 
     # Start flask after pre flight is done    
     start_flask()

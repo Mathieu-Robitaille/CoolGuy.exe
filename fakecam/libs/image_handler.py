@@ -1,29 +1,25 @@
 import cv2
-import effects
-import imageio
-import os
-import urllib.request
 import numpy as np
 
+from itertools import cycle
+from typing import Tuple
+
 from libs import file_handler
+from libs import effects
 
 
 class Image_Handler:
     def __init__(
             self,
-            width: int = 1280,
-            height: int = 720,
+            size: Tuple = (1280, 720),
             background_filename: str = "rat.gif",
             effect: effects.available_effects = effects.available_effects.no_effect
     ) -> None:
-        self.width = width
-        self.height = height
-
+        self.size = size
         self.background_filename = background_filename
 
         # This should be set to an iterator, preferably a cycle
         self.background = None
-
         self.effect = effect
 
     def change_effect(self, new_effect: effects.available_effects) -> None:
@@ -38,6 +34,10 @@ class Image_Handler:
         mask = cv2.dilate(mask.astype('uint8'), np.ones((10, 10), np.uint8), iterations=1)
         mask = cv2.blur(mask.astype(float), (30, 30))
         return mask
+
+    #==================
+    # Do a war crime
+    #==================
 
     def composite_frames(self, capture: np.array, mask: np.array) -> np.array:
         inv_mask = 1 - mask
@@ -58,9 +58,5 @@ class Image_Handler:
             pass
         self.background_path = filename
         bg = file_handler.load_background(path)
-        
-
-    #==================
-    # Somethign that shouldnt be here
-    #==================
-
+        bg.resize(self.size)
+        self.background = cycle(bg.media)
