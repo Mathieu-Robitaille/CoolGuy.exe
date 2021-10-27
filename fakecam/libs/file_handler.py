@@ -28,7 +28,12 @@ def get_background_path(file: str):
     background_path = os.path.join(root_path, 'backgrounds', file)
     return validate_path(background_path), background_path
 
-# rewrite
+#==================
+# File loaders
+#==================
+
+def load_video(uri: str) -> np.array:
+    pass
 
 def load_gif(uri: str) -> np.array:
     try:
@@ -53,6 +58,10 @@ def load_image(uri: str) -> np.array:
         print(f"file_handler.load_image media: {image}")
     return image
 
+#==================
+# File loaders end
+#==================
+
 def load_background(uri: str) -> media.Media_Type:
     kind = filetype.guess(uri)
 
@@ -70,6 +79,9 @@ def load_background(uri: str) -> media.Media_Type:
             print(f"file_handler.load_background loading Image")
         return load_image(uri)
 
+    if kind.extension in ["mp4"]:
+        if IS_DEBUG:
+            print(f"file_handler.load_background loading mp4")
 
 def download_object(url: str, filename: str) -> None:
     result, path = get_background_path(filename)

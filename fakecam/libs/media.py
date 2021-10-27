@@ -33,3 +33,14 @@ class Gif(Media_Type):
 
     def __str__(self) -> str:
         return str(self.media)
+
+class Video(Media_Type):
+
+    def __init__(self) -> None:
+        super().__init__()
+
+    def resize(self):
+        return super().resize()
+
+    def __str__(self) -> str:
+        return super().__str__()
