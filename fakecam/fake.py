@@ -3,6 +3,8 @@ import validators
 import time
 import libs
 
+import cv2
+
 from flask import Flask, request
 from threading import Thread
 
@@ -15,21 +17,39 @@ ih_connection = None
 flask_app = Flask(__name__)
 lock = Lock()
 
-default_image='popcorn.gif'
+CAMERA_CAPTURE_SIZE = (640, 480)
+FINAL_SIZE = (1280, 720)
+
+# =======================
+#  Temp stuff, this will be removed
+# =======================
+
+def tmp_get_random_bg() -> str:
+    import os, sys, pathlib, random
+    bg_path = os.path.join(pathlib.Path(sys.modules['__main__'].__file__).resolve().parent, 'backgrounds')
+    file_list = [file for file in os.listdir(bg_path) if not file.endswith(".mp4")]
+    return random.choice(file_list)
+
+# =======================
+#  Temp stuff end
+# =======================
+
 
 # Dont actually need to lock this...
 def get_ih() -> libs.image_handler.Image_Handler:
     with lock:
         global ih_connection
         if not ih_connection:
-            ih_connection = libs.image_handler.Image_Handler()
+            ih_connection = libs.image_handler.Image_Handler(
+                background_filename=tmp_get_random_bg()
+            )
         return ih_connection
-
-
 
 # =======================
 #  Move flask stuff to another file
 # =======================
+
+# Perhaps we keep settings in a json file and trigger a reload here after modifying it?
 
 @flask_app.route('/', methods=['POST'])
 def change_on_request():
@@ -68,8 +88,14 @@ def main():
     # Start flask after pre flight is done    
     start_flask()
 
+    # Loops per second
+    iter = 0
+
+    start = time.time()
+
     # frames forever
     while True:
+        iter += 1
         try:
             frame = camera.get_frame()
             frame = ih.apply_effect(frame)
@@ -78,7 +104,10 @@ def main():
             mask = ih.refine_mask(mask)
 
             composited_frame = ih.composite_frames(capture=frame, mask=mask)
-            camera.schedule_frame(composited_frame)
+
+            final_frame = cv2.resize(composited_frame, FINAL_SIZE)
+
+            camera.schedule_frame(final_frame)
         except libs.camera.CameraCaptureError as e:
             print("The camera failed to capture a frame.\n\tSleeping now for a few seconds.")
             time.sleep(3)
@@ -88,6 +117,11 @@ def main():
             print(e)
             print(traceback.format_exc())
             quit()
+
+        if time.time() > start + 5:
+            print(f"Loops in the last 5 seconds: {iter}\n\tAvg: {iter / 5}")
+            start = time.time()
+            iter = 0
 
 
 if __name__ == "__main__":
