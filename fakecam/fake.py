@@ -42,7 +42,7 @@ def get_ih() -> libs.image_handler.Image_Handler:
         if not ih_connection:
             ih_connection = libs.image_handler.Image_Handler(
                 background_filename=tmp_get_random_bg(),
-                effect=libs.effects.available_effects.lipstick
+                effect=libs.effects.available_effects.no_effect
             )
         return ih_connection
 
