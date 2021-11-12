@@ -8,3 +8,4 @@ tfjs-graph-converter==1.4.2
 validators==0.18.2
 numpy==1.19.5
 filetype==1.0.8
+face_recognition

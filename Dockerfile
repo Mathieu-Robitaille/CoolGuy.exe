@@ -14,7 +14,10 @@ RUN pip install --upgrade pip
 RUN apt-get update && \
     apt-get install -y \
       libsm6 libxext6 libxrender-dev \
-      libv4l-dev libgl1-mesa-dev
+      libv4l-dev libgl1-mesa-dev \
+      cmake
+
+  # Cmake is needed for dlib -> face_recognition
 
 # Install pip requirements
 COPY requirements.txt .
