@@ -1,0 +1,16 @@
+version: "3"
+services: 
+  fakecam:
+    build: .
+    network_mode: "host"
+    volumes:
+      - .:/app
+    runtime: nvidia
+    devices:
+      - /dev/video0
+      - /dev/video20
+      - /dev/nvidia0:/dev/nvidia0
+      - /dev/nvidiactl:/dev/nvidiactl
+      - /dev/nvidia-modeset:/dev/nvidia-modeset
+      - /dev/nvidia-uvm:/dev/nvidia-uvm
+      - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools

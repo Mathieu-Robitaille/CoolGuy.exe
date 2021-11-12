@@ -33,3 +33,14 @@ class Gif(Media_Type):
 
     def __str__(self) -> str:
         return str(self.media)
+
+class Video(Media_Type):
+
+    def __init__(self, media: np.array) -> None:
+        self.media = media
+
+    def resize(self, size):
+        self.media = [cv2.resize(frame, size) for frame in self.media]
+
+    def __str__(self) -> str:
+        return self.media
