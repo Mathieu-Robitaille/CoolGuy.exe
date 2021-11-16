@@ -42,7 +42,7 @@ def get_ih() -> libs.image_handler.Image_Handler:
         if not ih_connection:
             ih_connection = libs.image_handler.Image_Handler(
                 background_filename=tmp_get_random_bg(),
-                effect=libs.effects.available_effects.no_effect
+                effect=libs.effects.available_effects.lipstick
             )
         return ih_connection
 
@@ -52,21 +52,63 @@ def get_ih() -> libs.image_handler.Image_Handler:
 
 # Perhaps we keep settings in a json file and trigger a reload here after modifying it?
 
-@flask_app.route('/', methods=['POST'])
+@flask_app.route('/', methods=['GET', 'POST'])
 def change_on_request():
-    ih = get_ih()
-    try:
-        req = request.get_json()
-        download_status = True
-        if 'url' in req and 'filename' in req:
-            if validators.url(req['url']):
-                download_status = ih.download_object(req['url'], req['filename'])
-        if 'filename' in req and download_status:
-            ih.change_background(req['filename'])
-    except Exception as e:
-        print(e)
-        return "There was a fucky wucky\n"
-    return f"Changed to {req['filename']}!\n"
+    if request.method == 'POST':
+        try:
+            ih = get_ih()
+            req = request.get_json()
+            download_status = True
+            if 'url' in req and 'filename' in req:
+                if validators.url(req['url']):
+                    download_status = ih.download_object(req['url'], req['filename'])
+            if 'filename' in req and download_status:
+                ih.change_background(req['filename'])
+                print(f"Changed to {req['filename']}!\n")
+            if 'lip_color' in req:
+                if req['lip_color'] in libs.opts.colors:
+                    libs.opts.top_lip_color = libs.opts.colors[req['lip_color']]
+                    libs.opts.bottom_lip_color = libs.opts.colors[req['lip_color']]
+            return """
+            
+            """
+        except Exception as e:
+            print(e)
+            return "There was a fucky wucky\n"
+    if request.method == 'GET':
+        return '''
+            <!doctype html>
+            <title>Coolguy control!</title>
+            <h1>Upload a photo for your background!</h1>
+            <form method="POST" enctype="multipart/form-data">
+                <input type="file" name="file">
+                <input type="submit" value="Upload">
+            </form>
+                <br>
+                <label for="fname">Custom lip color:</label>
+                <form method="POST" enctype="multipart/form-data">
+
+                <label for="lip_color_r">Custom lip color - RED:</label>
+                <input type="number" id="lip_color_r" name="lip_color_r"><br>
+
+                <label for="lip_color_b">Custom lip color - GREEN:</label>
+                <input type="number" id="lip_color_g" name="lip_color_g"><br>
+
+                <label for="lip_color_g">Custom lip color - BLUE:</label>
+                <input type="number" id="lip_color_b" name="lip_color_b"><br>
+
+                <label for="lip_color_a">Custom lip color - ALPHA:</label>
+                <input type="number" id="lip_color_a" name="lip_color_a"><br>
+                <input type="submit" value="Submit">
+            </form>
+            <br>
+            <form method="POST" enctype="multipart/form-data">
+                <label for="eye_color">Custom eye color:</label><br>
+                <input type="text" id="eye_color" name="eye_color">
+
+                <input type="submit" value="Submit">
+            </form>
+            '''
 
 def start_flask():
     # Init Flask
