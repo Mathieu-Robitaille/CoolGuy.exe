@@ -11,7 +11,9 @@ ENV PYTHONUNBUFFERED=1
 RUN pip install --upgrade pip
 
 # install opencv dependencies
-RUN apt-get update && \
+# Needed to add key update since it vanished recently?
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A4B469963BF863CC && \
+    apt-get update && \
     apt-get install -y \
       libsm6 libxext6 libxrender-dev \
       libv4l-dev libgl1-mesa-dev \
@@ -28,8 +30,9 @@ COPY . /app
 
 # Creates a non-root user with an explicit UID and adds permission to access the /app folder
 # For more info, please refer to https://aka.ms/vscode-docker-python-configure-containers
-RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app
-RUN usermod -a -G video appuser
+RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app && \
+    groupmod -g 986 video && \
+    usermod -a -G video appuser
 
 USER appuser
 
