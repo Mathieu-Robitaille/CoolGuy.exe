@@ -22,7 +22,8 @@ class Image_Handler:
         # This should be set to an iterator, preferably a cycle
         self.background = None
         self.effect = effect
-
+        
+        self.skip = False
         self.debug = debug
 
     def change_effect(self, new_effect: effects.available_effects) -> None:

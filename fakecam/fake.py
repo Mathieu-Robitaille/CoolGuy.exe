@@ -10,6 +10,8 @@ from threading import Thread
 
 from multiprocessing import Lock
 
+# from libs.webserver
+
 import traceback
 
 # As per https://stackoverflow.com/questions/28423069/store-large-data-or-a-service-connection-per-flask-session
@@ -26,8 +28,12 @@ FINAL_SIZE = (1280, 720)
 
 def tmp_get_random_bg() -> str:
     import os, sys, pathlib, random
+
+    # Get all the stuff in the backgroud dir
     bg_path = os.path.join(pathlib.Path(sys.modules['__main__'].__file__).resolve().parent, 'backgrounds')
-    file_list = [file for file in os.listdir(bg_path) if not file.endswith(".mp4")]
+
+    # Dont pick an mp4 or a directory
+    file_list = [file for file in os.listdir(bg_path) if not (file.endswith(".mp4") or os.path.isdir(file))]
     return random.choice(file_list)
 
 # =======================
@@ -42,7 +48,7 @@ def get_ih() -> libs.image_handler.Image_Handler:
         if not ih_connection:
             ih_connection = libs.image_handler.Image_Handler(
                 background_filename=tmp_get_random_bg(),
-                effect=libs.effects.available_effects.no_effect
+                effect=libs.effects.available_effects.lipstick
             )
         return ih_connection
 
@@ -52,21 +58,69 @@ def get_ih() -> libs.image_handler.Image_Handler:
 
 # Perhaps we keep settings in a json file and trigger a reload here after modifying it?
 
-@flask_app.route('/', methods=['POST'])
+@flask_app.route('/', methods=['GET', 'POST'])
 def change_on_request():
-    ih = get_ih()
-    try:
-        req = request.get_json()
-        download_status = True
-        if 'url' in req and 'filename' in req:
-            if validators.url(req['url']):
-                download_status = ih.download_object(req['url'], req['filename'])
-        if 'filename' in req and download_status:
-            ih.change_background(req['filename'])
-    except Exception as e:
-        print(e)
-        return "There was a fucky wucky\n"
-    return f"Changed to {req['filename']}!\n"
+    if request.method == 'POST':
+        try:
+            ih = get_ih()
+            req = request.get_json()
+            download_status = True
+            if 'url' in req and 'filename' in req:
+                if validators.url(req['url']):
+                    download_status = ih.download_object(req['url'], req['filename'])
+            if 'filename' in req and download_status:
+                ih.change_background(req['filename'])
+                print(f"Changed to {req['filename']}!\n")
+            if 'lip_color' in req:
+                if req['lip_color'] in libs.opts.colors:
+                    libs.opts.top_lip_color = libs.opts.colors[req['lip_color']]
+                    libs.opts.bottom_lip_color = libs.opts.colors[req['lip_color']]
+            if 'skip' in req:
+                ih.skip = not ih.skip
+            return """
+            
+            """
+        except Exception as e:
+            print(e)
+            return "There was a fucky wucky\n"
+    if request.method == 'GET':
+        return '''
+            <!doctype html>
+            <title>Coolguy control!</title>
+            <h1>Upload a photo for your background!</h1>
+            <form method="POST" enctype="multipart/form-data">
+                <input type="file" name="file">
+                <input type="submit" value="Upload">
+            </form>
+                <br>
+                <label for="fname">Custom lip color:</label>
+                <form method="POST" enctype="multipart/form-data">
+
+                <label for="lip_color_r">Custom lip color - RED:</label>
+                <input type="number" id="lip_color_r" name="lip_color_r"><br>
+
+                <label for="lip_color_b">Custom lip color - GREEN:</label>
+                <input type="number" id="lip_color_g" name="lip_color_g"><br>
+
+                <label for="lip_color_g">Custom lip color - BLUE:</label>
+                <input type="number" id="lip_color_b" name="lip_color_b"><br>
+
+                <label for="lip_color_a">Custom lip color - ALPHA:</label>
+                <input type="number" id="lip_color_a" name="lip_color_a"><br>
+                <input type="submit" value="Submit">
+            </form>
+            <br>
+            <form method="POST" enctype="multipart/form-data">
+                <label for="eye_color">Custom eye color:</label><br>
+                <input type="text" id="eye_color" name="eye_color">
+
+                <input type="submit" value="Submit">
+            </form>
+            <form>
+                <input type="checkbox" id="skip" name="skip" value="skip">
+                <label for="skip"> Do we want to skip rendering?</label><br>
+            </form>
+            '''
 
 def start_flask():
     # Init Flask
@@ -91,7 +145,6 @@ def main():
 
     # Loops per second
     iter = 0
-
     start = time.time()
 
     # frames forever
@@ -99,14 +152,17 @@ def main():
         iter += 1
         try:
             frame = camera.get_frame()
-            frame = ih.apply_effect(frame)
+            if ih.skip:
+                final_frame = cv2.resize(frame, FINAL_SIZE)
+            else:
+                frame = ih.apply_effect(frame)
 
-            mask = bodypix.get_mask(capture=frame)
-            mask = ih.refine_mask(mask)
+                mask = bodypix.get_mask(capture=frame)
+                mask = ih.refine_mask(mask)
 
-            composited_frame = ih.composite_frames(capture=frame, mask=mask)
+                composited_frame = ih.composite_frames(capture=frame, mask=mask)
 
-            final_frame = cv2.resize(composited_frame, FINAL_SIZE)
+                final_frame = cv2.resize(composited_frame, FINAL_SIZE)
 
             camera.schedule_frame(final_frame)
         except libs.camera.CameraCaptureError as e:
