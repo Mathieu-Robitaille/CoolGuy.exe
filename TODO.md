@@ -40,3 +40,7 @@ Until I find a standard format for this I will make my own similar to the change
  - Do we just use face_recog to generate the mask instead?
    - We could use the facial landmarks to generate a polygon surrounding the face.
    - Could save some work.
+
+
+  curl -H "Content-Type: application/json" -X POST --data '{"skip":""}' http://127.0.0.1:9987/
+

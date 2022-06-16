@@ -28,13 +28,19 @@ def effect_lipstick(frame):
 
     #BGRA
     if isinstance(opts.top_lip_color, tuple):
-        if opts.top_lip_color[-1] == 0 or opts.bottom_lip_color[-1] == 0:
+        if opts.top_lip_color[-1] == 0:
             return frame
         top_lip_color = opts.top_lip_color
-        bottom_lip_color = opts.bottom_lip_color
     else:
         top_lip_color = next(opts.top_lip_color)
+    
+    if isinstance(opts.bottom_lip_color, tuple):
+        if opts.bottom_lip_color[-1] == 0:
+            return frame
+        bottom_lip_color = opts.bottom_lip_color
+    else:
         bottom_lip_color = next(opts.bottom_lip_color)
+
     eye_color = opts.eye_color
 
     scalar = opts.lipstick_scalar
@@ -72,6 +78,7 @@ def effect_lipstick(frame):
         d.polygon(top_lip, fill=top_lip_color)
         d.polygon(bottom_lip, fill=bottom_lip_color)
 
+        # Fuck up the eyeballs
         d.line(left_eye[0] + [left_eye[1]], fill=eye_color, width=eye_liner_width)
         d.line(right_eye[0] + [right_eye[1]], fill=eye_color, width=eye_liner_width)
         

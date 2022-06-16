@@ -10,6 +10,8 @@ from threading import Thread
 
 from multiprocessing import Lock
 
+# from libs.webserver
+
 import traceback
 
 # As per https://stackoverflow.com/questions/28423069/store-large-data-or-a-service-connection-per-flask-session
@@ -26,8 +28,12 @@ FINAL_SIZE = (1280, 720)
 
 def tmp_get_random_bg() -> str:
     import os, sys, pathlib, random
+
+    # Get all the stuff in the backgroud dir
     bg_path = os.path.join(pathlib.Path(sys.modules['__main__'].__file__).resolve().parent, 'backgrounds')
-    file_list = [file for file in os.listdir(bg_path) if not file.endswith(".mp4")]
+
+    # Dont pick an mp4 or a directory
+    file_list = [file for file in os.listdir(bg_path) if not (file.endswith(".mp4") or os.path.isdir(file))]
     return random.choice(file_list)
 
 # =======================
@@ -69,6 +75,8 @@ def change_on_request():
                 if req['lip_color'] in libs.opts.colors:
                     libs.opts.top_lip_color = libs.opts.colors[req['lip_color']]
                     libs.opts.bottom_lip_color = libs.opts.colors[req['lip_color']]
+            if 'skip' in req:
+                ih.skip = not ih.skip
             return """
             
             """
@@ -108,6 +116,10 @@ def change_on_request():
 
                 <input type="submit" value="Submit">
             </form>
+            <form>
+                <input type="checkbox" id="skip" name="skip" value="skip">
+                <label for="skip"> Do we want to skip rendering?</label><br>
+            </form>
             '''
 
 def start_flask():
@@ -133,7 +145,6 @@ def main():
 
     # Loops per second
     iter = 0
-
     start = time.time()
 
     # frames forever
@@ -141,14 +152,17 @@ def main():
         iter += 1
         try:
             frame = camera.get_frame()
-            frame = ih.apply_effect(frame)
+            if ih.skip:
+                final_frame = cv2.resize(frame, FINAL_SIZE)
+            else:
+                frame = ih.apply_effect(frame)
 
-            mask = bodypix.get_mask(capture=frame)
-            mask = ih.refine_mask(mask)
+                mask = bodypix.get_mask(capture=frame)
+                mask = ih.refine_mask(mask)
 
-            composited_frame = ih.composite_frames(capture=frame, mask=mask)
+                composited_frame = ih.composite_frames(capture=frame, mask=mask)
 
-            final_frame = cv2.resize(composited_frame, FINAL_SIZE)
+                final_frame = cv2.resize(composited_frame, FINAL_SIZE)
 
             camera.schedule_frame(final_frame)
         except libs.camera.CameraCaptureError as e:

@@ -5,6 +5,7 @@ def color_rainbow():
     while True:
         yield tuple(round(i * 255) for i in colorsys.hsv_to_rgb(n / 360, 1, 1))
         n = (n + 1) % 360
+rainbow_gen = color_rainbow()
 
 config = {
     "final_size": [1280, 720],
@@ -19,8 +20,6 @@ config = {
 }
 
 
-rainbow_gen = color_rainbow()
-
 #BGRA
 colors = {
     "black": (0, 0, 0, 110),
@@ -34,9 +33,8 @@ colors = {
 eye_liner_width = config["effects"]["makeup"]["eye_liner_width"]
 lipstick_scalar = config["effects"]["makeup"]["lipstick_scalar"]
 
-eye_color = colors["transparent"]
+eye_color = colors["black"]
 
-
-top_lip_color = colors["rainbow"]
-bottom_lip_color = colors["rainbow"]
+top_lip_color = colors["transparent"]
+bottom_lip_color = colors["transparent"]
 
